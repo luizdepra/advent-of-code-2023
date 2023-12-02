@@ -1,5 +1,5 @@
 [package]
-name = "day01"
+name = "day02"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,5 @@ name = "part02"
 path = "src/part02.rs"
 
 [dependencies]
+pest = "2.7"
+pest_derive = "2.7"

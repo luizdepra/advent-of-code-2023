@@ -1,0 +1,8 @@
+file = { SOI ~ (game ~ ("\r\n" | "\n")?)* ~ EOI }
+game = { "Game " ~ id ~ ": " ~ draw_list }
+id = { (ASCII_DIGIT)+ }
+draw_list = { (draw ~ ("; ")?)+ }
+draw = { (cube ~ (", ")?)+ }
+cube = { num_cubes ~ " " ~ cube_color }
+num_cubes = { (ASCII_DIGIT)+ }
+cube_color = { ("red" | "green" | "blue") }
