@@ -32,23 +32,12 @@ fn main() {
         let card_numbers = extract_numbers(numbers_sections[1]);
 
         let count = card_numbers.intersection(&winning_numbers).count();
-        println!(
-            "index = {:?}, qtde={}, count = {}",
-            index, card_quantities[index], count
-        );
         for i in 1..=count {
-            if index + i >= MAX_CARD_ID {
-                break;
-            }
-            card_quantities[index + i] += 1;
-            println!(
-                "    updated: id = {:?}, qtde={}",
-                index + i,
-                card_quantities[index + i],
-            );
+            let step_index = (index + i) % MAX_CARD_ID;
+
+            card_quantities[step_index] += 1 * card_quantities[index];
         }
     }
 
-    println!("{:?}", card_quantities);
     println!("{:?}", card_quantities.iter().sum::<u32>());
 }
