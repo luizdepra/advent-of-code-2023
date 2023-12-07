@@ -1,5 +1,5 @@
-#[derive(Debug, Clone, Copy)]
-struct NumberRange(u64, u64);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct NumberRange(i64, i64);
 
 impl NumberRange {
     fn intersects_with(&self, other: &NumberRange) -> bool {
@@ -7,7 +7,7 @@ impl NumberRange {
     }
 
     fn intersection(&self, other: &NumberRange) -> NumberRange {
-        NumberRange(u64::max(self.0, other.0), u64::min(self.1, other.1))
+        NumberRange(i64::max(self.0, other.0), i64::min(self.1, other.1))
     }
 
     fn split_ranges(&self, other: &NumberRange) -> Vec<NumberRange> {
@@ -28,7 +28,7 @@ impl NumberRange {
 }
 
 #[derive(Debug)]
-struct MappingRange(u64, u64, u64, u64);
+struct MappingRange(i64, i64, i64, i64);
 
 impl MappingRange {
     fn source_range(&self) -> NumberRange {
@@ -40,16 +40,16 @@ impl MappingRange {
     }
 }
 
-fn extract_numbers(line: &str) -> Vec<u64> {
+fn extract_numbers(line: &str) -> Vec<i64> {
     line.split(' ')
-        .map(|s| s.parse::<u64>())
+        .map(|s| s.parse::<i64>())
         .filter(|s| s.is_ok())
         .map(|s| s.unwrap())
-        .collect::<Vec<u64>>()
+        .collect::<Vec<i64>>()
 }
 
 fn main() {
-    let lines = include_str!("inputtest.txt")
+    let lines = include_str!("input01.txt")
         .split('\n')
         .collect::<Vec<&str>>();
 
@@ -82,41 +82,35 @@ fn main() {
         index += 1;
     }
 
-    println!("mapping_list = {:?}", mapping_list);
-    println!("numbers = {:?}", numbers);
-
     for mapping in mapping_list {
-        println!("  mapping = {:?}", mapping);
         for mapping_item in mapping {
-            println!("    mapping_item = {:?}", mapping_item);
             let case_list = numbers
                 .iter()
                 .cloned()
                 .enumerate()
-                .filter(|(_, n)| n.0.intersects_with(&mapping_item.source_range()))
+                .filter(|(_, n)| !n.1 && n.0.intersects_with(&mapping_item.source_range()))
                 .collect::<Vec<(usize, (NumberRange, bool))>>();
             for (index, case) in case_list {
-                println!("      case = {:?}", case);
+                let source_range = mapping_item.source_range();
+                let splits = case.0.split_ranges(&source_range);
 
-                let splits = case.0.split_ranges(&mapping_item.source_range());
-
-                let range = splits[0].1 - splits[0].1;
+                let new_range = splits[0];
                 let dest_range = mapping_item.destination_range();
-                // traduzir src to dst. provavelmente precisa usar a intersection atualizada
-                //(numbers[index].0).0 = dest_range.0
-                //numbers[index].1 = true;
+                let diff = dest_range.0 - source_range.0;
 
-                println!("      number_updated = {:?}", numbers[index]);
-                println!("      splits = {:?}", splits);
+                (numbers[index].0).0 = new_range.0 + diff;
+                (numbers[index].0).1 = new_range.1 + diff;
+                numbers[index].1 = true;
 
                 numbers.extend(splits.iter().skip(1).map(|n| (*n, false)));
             }
         }
 
-        println!("numbers = {:?}", numbers);
-        break;
+        for item in numbers.iter_mut() {
+            item.1 = false;
+        }
     }
 
-    let min_location = numbers.first().unwrap();
-    println!("min_location = {}", (min_location.0).0);
+    let min_location = numbers.iter().map(|n| n.0).min().unwrap();
+    println!("min_location = {}", min_location.0);
 }
