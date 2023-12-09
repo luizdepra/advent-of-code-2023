@@ -1,5 +1,5 @@
 [package]
-name = "day07"
+name = "day08"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,4 @@ name = "part02"
 path = "src/part02.rs"
 
 [dependencies]
+regex = "1.10"
