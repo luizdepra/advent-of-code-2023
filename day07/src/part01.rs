@@ -1,8 +1,6 @@
-use std::cmp::{Ordering, Reverse};
+use std::{cmp::Ordering, collections::HashMap};
 
-use itertools::Itertools;
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 enum Card {
     N2 = 0,
@@ -55,19 +53,18 @@ enum HandKind {
 
 impl From<&Vec<Card>> for HandKind {
     fn from(value: &Vec<Card>) -> Self {
-        let groups = value
-            .iter()
-            .group_by(|c| c.to_owned())
-            .into_iter()
-            .map(|(&k, v)| (k, v.count()))
-            .collect::<Vec<(Card, usize)>>();
+        let mut groups = HashMap::new();
+
+        for v in value {
+            *groups.entry(v).or_insert(0) += 1;
+        }
 
         match groups.len() {
             5 => HandKind::HighCard,
             4 => HandKind::OnePair,
-            3 if groups.iter().filter(|(_, c)| *c == 2).count() == 2 => HandKind::TwoPairs,
+            3 if groups.values().filter(|&v| *v == 2).count() == 2 => HandKind::TwoPairs,
             3 => HandKind::ThreeOfAKind,
-            2 if groups.iter().filter(|(_, c)| *c == 3).count() == 1 => HandKind::FullHouse,
+            2 if groups.values().filter(|&v| *v == 3).count() == 1 => HandKind::FullHouse,
             2 => HandKind::FourOfAKind,
             1 => HandKind::FiveOfAKind,
             _ => unreachable!(),
@@ -105,7 +102,7 @@ impl Ord for Hand {
 }
 
 fn main() {
-    let mut hands = include_str!("inputtest.txt")
+    let mut hands = include_str!("input01.txt")
         .lines()
         .map(|l| {
             let splits = l.split(' ').collect::<Vec<&str>>();
@@ -113,7 +110,13 @@ fn main() {
         })
         .collect::<Vec<(Hand, u64)>>();
 
-    hands.sort();
+    hands.sort_by(|a, b| b.0.cmp(&a.0));
 
-    println!("hands = {:?}", hands);
+    let result = hands
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.1 * (hands.len() - i) as u64)
+        .sum::<u64>();
+
+    println!("result = {:?}", result);
 }
